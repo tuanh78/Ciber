@@ -1,0 +1,250 @@
+﻿@model Ciber.Models.OrderModel
+@{
+    ViewData["Title"] = "Customer Orders";
+}
+
+<div>
+    <div class="main">
+        <div class="search-group d-flex">
+            <div class="search-title">Enter category to search</div>
+            @using (Html.BeginForm("Index", "", FormMethod.Get))
+            {
+                <input type="text" name="txtSearch" placeholder="Search!" value="@ViewBag.TxtSearch" />
+                <button type="submit" class="btn btn-info">Search</button>
+            }
+
+        </div>
+
+        <div class="main-content">
+            <div class="content">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Product Name
+                                
+                                @if(ViewBag.ProductNameSortParm == "product_desc")
+                                {
+                                    <span id="product-asc">
+                                        @Html.ActionLink("^", "Index", new { sortOrder = ViewBag.ProductNameSortParm })
+                                    </span>
+                                } else
+                                {
+                                    <span id="product-desc">
+                                        @Html.ActionLink("v", "Index", new { sortOrder = ViewBag.ProductNameSortParm })
+                                    </span>
+                                }
+                            </th>
+                            <th scope="col">
+                                Category Name
+                                @if (ViewBag.CategorySortParm == "category_desc")
+                                {
+                                    <span id="category-asc">
+                                        @Html.ActionLink("^", "Index", new { sortOrder = ViewBag.CategorySortParm })
+                                    </span>
+
+                                } else
+                                {
+                                    <span id="category-desc">
+                                        @Html.ActionLink("v", "Index", new { sortOrder = ViewBag.CategorySortParm })
+                                    </span>
+                                }
+
+                                </th>
+                            <th scope="col">
+                                Customer Name
+                                @if (ViewBag.CustomerSortParm == "customer_desc")
+                                {
+                                    <span id="customer-asc">
+                                        @Html.ActionLink("^", "Index", new { sortOrder = ViewBag.CustomerSortParm })
+                                    </span>
+                                } else
+                                {
+                                    <span id="customer-desc">
+                                        @Html.ActionLink("v", "Index", new { sortOrder = ViewBag.CustomerSortParm })
+                                    </span>
+                                }
+                            </th>
+                            <th scope="col">Order Date</th>
+                            <th scope="col">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.ListOrder)
+                        {
+                            <tr>
+                                <th scope="row">@item.ProductName</th>
+                                <td>@item.CategoryName</td>
+                                <td>@item.CustomerName</td>
+                                <td>@item.OrderDate.ToString("dd/MM/yyyy")</td>
+                                <td>@item.Amount</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="paging">
+                <div class="card-footer">
+                    <nav aria-label="Page navigation example">
+                        <ul class="pagination">
+
+                            @{
+                                int position;
+                                int pageCurrent = ViewBag.Paging.PageIndex;
+                                string txtSearch = ViewBag.Paging.TxtSearch;
+                                float numSize = ViewBag.Paging.TotalPage;
+                                if (pageCurrent > 1)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="@Url.Action("Index", "", new { txtSearch = (txtSearch != "" ? txtSearch : null), page = 1 })" tabindex="-1">&#60;&#60; First</a>
+                                    </li>
+                                }
+                                if (pageCurrent > 1)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="@Url.Action("Index", "", new { txtSearch = (txtSearch != "" ? txtSearch : null), page = pageCurrent-1 })" tabindex="-1">&#60 Previous</a>
+                                    </li>
+                                }
+
+                                for (position = 1; position <= numSize; position++)
+                                {
+
+                                    if (position == pageCurrent)
+                                    {
+                                        <li class="page-item active"><a class="page-link" href="@Url.Action("Index", "", new { txtSearch = (txtSearch != "" ? txtSearch : null), page = position })">@position</a></li>
+                                    }
+
+                                    else
+                                    {
+                                        <li class="page-item"><a class="page-link" href="@Url.Action("Index", "", new { txtSearch = (txtSearch != "" ? txtSearch : null), page = position })">@position</a></li>
+                                    }
+
+                                }
+                                if (pageCurrent > 0 && pageCurrent < numSize)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="@Url.Action("Index", "", new { txtSearch = (txtSearch != "" ? txtSearch : null), page = pageCurrent+1 })" tabindex="-1">Next &#62;</a>
+                                    </li>
+                                }
+
+                                if (pageCurrent > 0 && pageCurrent < numSize)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="@Url.Action("Index", "", new { txtSearch = (txtSearch != "" ? txtSearch : null), page = numSize })" tabindex="-1">Last &#62;&#62;</a>
+                                    </li>
+                                }
+
+                            }
+
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+
+        </div>
+        </div>
+
+        <div class="add-customer d-flex justify-content-end">
+            <span id="btn-add-order" class="btn-add-customer">Create new order</span>
+        </div>
+
+        @* form thêm mới đơn hàng *@
+        <div id="popup-order" class="new-order-popup position-fixed hidden">
+            <div class="order-header d-flex justify-content-between">
+                <div class="order-popup-title">Create new order</div>
+                <div class="btn btn-close">
+                    <button id="btn-close">x</button>
+                </div>
+            </div>
+
+            <form asp-controller="Home" asp-action="SaveOrder" method="post">
+                <div class="group-input container">
+                    <div class="order-item d-flex row">
+                        <div class="order-item-title col-3">Order name</div>
+                        <div class="common-input col">
+                            <input style="min-width: 250px" class="order-name" type="text" name="txtOrderName" value="" />
+                        </div>
+                    </div>
+
+                    <div class="order-item d-flex row">
+                        <div class="order-item-title col-3">Product</div>
+                        <div class="col">
+                            @Html.DropDownList("products")
+                        </div>
+                    </div>
+
+                    <div class="order-item d-flex row">
+                        <div class="order-item-title col-3">Customer</div>
+                        <div class="col">
+                            @Html.DropDownList("customers")
+                        </div>
+                    </div>
+
+                    <div class="order-item d-flex row">
+                        <div class="order-item-title col-3">Order Date</div>
+                        <div class="col">
+                            <div class="common-input">
+                                <div class="form-group">
+                                    <div class='input-group date' style="max-width: 250px" id='datepicker'>
+                                        <input asp-for="OrderDate" name="orderDate" type="text" class="form-control" value="@DateTime.Now.ToString("dd/MM/yyyy")" />
+                                        <div class="input-group-addon">
+                                            <span class="glyphicon glyphicon-calendar"></span>
+                                        </div>
+                                    </div>
+                                    <span asp-validation-for="OrderDate" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="order-item d-flex row">
+                        <div class="order-item-title col-3">Amount</div>
+                        <div class="common-input col">
+                            <input style="min-width: 250px" type="text" name="txtAmount" value="" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-create-order d-flex justify-content-end">
+                    <input id="Submit1" type="submit" value="Create Order" />
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @section Scripts
+    {
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.1/moment.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/js/bootstrap-datetimepicker.min.js"></script>
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/css/bootstrap-datetimepicker.min.css">
+        <script>
+            $(function () {
+                $('#datepicker').datetimepicker({
+                    format: 'DD/MM/YYYY',
+                });
+            });
+            // hiện popup thêm đơn hàng
+            $("#btn-add-order").click(function () {
+                if ($("#popup-order").hasClass("hidden")) {
+                    $("#popup-order").removeClass("hidden");
+                }
+            });
+            // ẩn popup thêm đơn hàng
+            $("#btn-close").click(function () {
+                if (!$("#popup-order").hasClass("hidden")) {
+                    console.log('v4');
+                    $("#popup-order").addClass("hidden");
+                }
+            });
+
+            // Prevent events from getting pass .popup
+            $("#btn-add-order").click(function (e) {
+                e.stopPropagation();
+            });
+        </script>
+    }
+</div>
