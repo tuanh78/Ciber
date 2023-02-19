@@ -43,7 +43,7 @@ namespace Ciber.Controllers
         [AllowAnonymous]
         [Route("login")]
         [HttpPost]
-        public IActionResult Login(UserModel userModel)
+        public IActionResult Login([FromBody]UserModel userModel)
         {
             if (string.IsNullOrEmpty(userModel.UserName) || string.IsNullOrEmpty(userModel.Password))
             {
@@ -203,8 +203,6 @@ namespace Ciber.Controllers
                     });
                 }
                 ViewBag.customers = lstCustomer;
-                var a = 0;
-                var b = 3 / a;
                 return View(orderModel);
             }
             catch (Exception)

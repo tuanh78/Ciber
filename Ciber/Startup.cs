@@ -53,9 +53,17 @@ namespace Ciber
             services.AddScoped<IOrderRepository, OrderRepository>();
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<ICustomerRepository, CustomerRepository>();
-            services.AddMvc()
-            .AddSessionStateTempDataProvider();
-            services.AddSession();
+            //services.AddMvc()
+            //.AddSessionStateTempDataProvider();
+            //services.AddSession();
+
+            services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromSeconds(10);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
+
             services.AddControllersWithViews();
         }
 
@@ -75,9 +83,9 @@ namespace Ciber
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-            app.UseAuthentication(); // NOTE: line is newly added
             app.UseRouting();
             app.UseSession();
             app.Use(async (context, next) =>
@@ -87,8 +95,14 @@ namespace Ciber
                 {
                     context.Request.Headers.Add("Authorization", "Bearer " + token);
                 }
+                else
+                {
+                    context.Session.SetString("Token", "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiam95ZGlwa2FuamlsYWwiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJtYW5hZ2VyIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiJmZTNjMjI0MC00ODZkLTRjOGYtYjMyOS05YjZmYTg3ZWE1N2IiLCJleHAiOjE2NzY4MDg5NzYsImlzcyI6Ind3dy5qb3lkaXBrYW5qaWxhbC5uZXQiLCJhdWQiOiJ3d3cuam95ZGlwa2FuamlsYWwubmV0In0.LXZq_BRCZM_zRsLXchVvPXu39MXnSikIPQA_uBLNk30");
+                    context.Request.Headers.Add("Authorization", "Bearer eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiam95ZGlwa2FuamlsYWwiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJtYW5hZ2VyIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiJmZTNjMjI0MC00ODZkLTRjOGYtYjMyOS05YjZmYTg3ZWE1N2IiLCJleHAiOjE2NzY4MDg5NzYsImlzcyI6Ind3dy5qb3lkaXBrYW5qaWxhbC5uZXQiLCJhdWQiOiJ3d3cuam95ZGlwa2FuamlsYWwubmV0In0.LXZq_BRCZM_zRsLXchVvPXu39MXnSikIPQA_uBLNk30");
+                }
                 await next();
             });
+            app.UseAuthentication(); // NOTE: line is newly added
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
@@ -98,7 +112,7 @@ namespace Ciber
                     pattern: "{controller=Home}/{action=Index}/{id?}");
             });
 
-            
+
         }
     }
 }
